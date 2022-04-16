@@ -4,6 +4,7 @@ WORKDIR /app
 
 COPY . /app
 
+ENV CGO_ENABLED=0
 RUN go build -o /app/build/bff-website ./main.go
 
 FROM alpine

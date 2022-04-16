@@ -128,7 +128,7 @@ func (s *HTTPServer) ListenAndServe() error {
 func (s *HTTPServer) configureRouter() {
 	s.Router.NotFoundHandler = s.getNotFoundHandler()
 	s.Router.Use(appendJSONHeader)
-	s.Router.Use(s.authenticateUser)
+	//s.Router.Use(s.authenticateUser)
 
 	user := s.Router.PathPrefix("/user").Subrouter()
 	{
