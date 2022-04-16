@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      dockerfile: Dockerfile
+    environment:
+      APP_HTTP_PORT: 5000
+
+      APP_MONGO_URL: mongodb://admin:admin@mongo
+
+      APP_RABBITMQ_URL: amqp://admin:admin@rabbitmq/default
+      APP_RABBITMQ_EXCHANGE_NAME: trading
+    ports:
+      - 8000:8000
+    depends_on:
+      - mongo
+        #- rabbitmq
+    volumes:
+      - ./cmd:/app/cmd
+      - ./pkg:/app/pkg
+      - ./main.go:/app/main.go
+
+  mongo:
+   image: mongo:4.4
+   restart: always
+   environment:
+     MONGO_INITDB_ROOT_USERNAME: admin
+     MONGO_INITDB_ROOT_PASSWORD: admin
+   ports:
+     - 27017:27017
+
