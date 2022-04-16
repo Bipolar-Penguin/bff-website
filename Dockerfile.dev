@@ -1,0 +1,10 @@
+FROM golang:1.17-stretch as compiler
+
+WORKDIR /app
+
+COPY . /app
+
+EXPOSE 8000
+
+CMD go get github.com/mitranim/gow && gow run main.go
+
