@@ -12,8 +12,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/Bipolar-Penguin/bff-website/pkg/domain"
 	"github.com/Bipolar-Penguin/bff-website/pkg/repository"
 	"github.com/Bipolar-Penguin/bff-website/pkg/service"
+	"github.com/Bipolar-Penguin/bff-website/pkg/transport/amqp"
 	httptransport "github.com/Bipolar-Penguin/bff-website/pkg/transport/http"
 )
 
@@ -22,8 +24,9 @@ const (
 )
 
 var (
-	cfgHTTPPort int
-	cfgMongoURL string
+	cfgHTTPPort   int
+	cfgMongoURL   string
+	cfgRabbimqURL string
 )
 
 var rootCmd = &cobra.Command{
@@ -44,9 +47,11 @@ func init() {
 
 	rootCmd.PersistentFlags().IntVar(&cfgHTTPPort, "http-port", deafaultHTTPPort, "http port to connect to")
 	rootCmd.PersistentFlags().StringVar(&cfgMongoURL, "mongo-url", "", "mongo URL")
+	rootCmd.PersistentFlags().StringVar(&cfgMongoURL, "rabbitmq-url", "", "rabbitmq URL")
 
 	viper.BindPFlag("http-port", rootCmd.PersistentFlags().Lookup("http-port"))
 	viper.BindPFlag("mongo-url", rootCmd.PersistentFlags().Lookup("mongo-url"))
+	viper.BindPFlag("rabbitmq-url", rootCmd.PersistentFlags().Lookup("rabbitmq-url"))
 }
 
 func initConfig() {
@@ -77,6 +82,20 @@ func run() { // nolint:funlen
 		logger.Log("error", "mongo-url argument was not provided")
 		os.Exit(1)
 	}
+	rabbitmqURL := viper.GetString("rabbitmq-url")
+	if rabbitmqURL == "" {
+		logger.Log("error", "rabbitmq-url argument was not provided")
+		os.Exit(1)
+	}
+
+	// Broker declaration
+	var amqpBroker *amqp.RabbitBroker
+	{
+		logger := log.With(logger, "module", "transport.amqp")
+
+		amqpBroker = amqp.NewRabbitBroker(rabbitmqURL, logger)
+		amqpBroker.PublishEvent(domain.Event{GUID: "foobar"})
+	}
 
 	// Repositories declaration
 	var rep *repository.Repositories
@@ -92,7 +111,7 @@ func run() { // nolint:funlen
 	// Services declaration
 	var svc *service.Service
 	{
-		svc = service.NewService(rep)
+		svc = service.NewService(rep, amqpBroker)
 	}
 
 	// HTTP server declaration

@@ -15,7 +15,9 @@ type mongoRepository struct {
 }
 
 func NewMongoRepository(coll *mongo.Collection) *mongoRepository {
-	return &mongoRepository{coll}
+	r := &mongoRepository{coll}
+	r.dummy()
+	return r
 }
 
 func (m *mongoRepository) Find(userID string) (domain.User, error) {
@@ -62,4 +64,94 @@ func (m *mongoRepository) Save(user domain.User) (domain.User, error) {
 	}
 
 	return user, nil
+}
+
+func (m *mongoRepository) dummy() {
+	var users = []domain.User{
+		{
+			ID:               "a",
+			Username:         "Поставщик А",
+			Region:           "Санкт-Петербург",
+			OrganizationType: "individual",
+			Role:             "supplier",
+			Contacts: struct {
+				Email       string "json:\"email\" bson:\"email\""
+				PhoneNumber string "json:\"phone_number\" bson:\"phone_number\""
+				TelegramID  string "json:\"telegram_id\" bson:\"telegram_id\""
+			}{
+				Email:       "kuwerin@gmail.com",
+				PhoneNumber: "79967726643",
+				TelegramID:  "528263453",
+			},
+			Permissions: struct {
+				Email    bool "json:\"email\" bson:\"email\""
+				Phone    bool "json:\"phone\" bson:\"phone\""
+				Telegram bool "json:\"telegram\" bson:\"telegram\""
+				Push     bool "json:\"push\" bson:\"push\""
+			}{
+				Email:    true,
+				Phone:    true,
+				Telegram: true,
+				Push:     true,
+			},
+		},
+		{
+			ID:               "b",
+			Username:         "Поставщик C",
+			Region:           "Санкт-Петербург",
+			OrganizationType: "individual",
+			Role:             "supplier",
+			Contacts: struct {
+				Email       string "json:\"email\" bson:\"email\""
+				PhoneNumber string "json:\"phone_number\" bson:\"phone_number\""
+				TelegramID  string "json:\"telegram_id\" bson:\"telegram_id\""
+			}{
+				Email:       "",
+				PhoneNumber: "79817914985",
+				TelegramID:  "528569218",
+			},
+			Permissions: struct {
+				Email    bool "json:\"email\" bson:\"email\""
+				Phone    bool "json:\"phone\" bson:\"phone\""
+				Telegram bool "json:\"telegram\" bson:\"telegram\""
+				Push     bool "json:\"push\" bson:\"push\""
+			}{
+				Email:    false,
+				Phone:    true,
+				Telegram: true,
+				Push:     true,
+			},
+		},
+		{
+			ID:               "c",
+			Username:         "Поставщик C",
+			Region:           "Санкт-Петербург",
+			OrganizationType: "individual",
+			Role:             "supplier",
+			Contacts: struct {
+				Email       string "json:\"email\" bson:\"email\""
+				PhoneNumber string "json:\"phone_number\" bson:\"phone_number\""
+				TelegramID  string "json:\"telegram_id\" bson:\"telegram_id\""
+			}{
+				Email:       "",
+				PhoneNumber: "",
+				TelegramID:  "",
+			},
+			Permissions: struct {
+				Email    bool "json:\"email\" bson:\"email\""
+				Phone    bool "json:\"phone\" bson:\"phone\""
+				Telegram bool "json:\"telegram\" bson:\"telegram\""
+				Push     bool "json:\"push\" bson:\"push\""
+			}{
+				Email:    false,
+				Phone:    false,
+				Telegram: false,
+				Push:     true,
+			},
+		},
+	}
+
+	for _, user := range users {
+		m.coll.InsertOne(context.Background(), user)
+	}
 }
