@@ -2,6 +2,7 @@ package amqp
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/go-kit/log"
@@ -20,7 +21,7 @@ func NewRabbitBroker(connString string, logger log.Logger) *RabbitBroker {
 }
 
 func (b *RabbitBroker) PublishEvent(event domain.Event) {
-	b.logger.Log("event", event)
+	b.logger.Log("event", fmt.Sprintf("%v", event))
 
 	jsonBody, err := json.Marshal(event)
 	if err != nil {
@@ -42,11 +43,11 @@ func (b *RabbitBroker) PublishEvent(event domain.Event) {
 
 	_, err = ch.QueueDeclare(
 		"trading_session.update", // name
-		true,                     // durable
-		false,                    // delete when unused
+		false,                    // durable
+		true,                     // delete when unused
 		false,                    // exclusive
 		false,                    // no-wait
-		nil,                      // arguments
+		map[string]interface{}{"x-message-ttl": 10000}, // arguments
 	)
 
 	err = ch.Publish(
