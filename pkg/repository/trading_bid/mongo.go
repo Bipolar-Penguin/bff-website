@@ -3,10 +3,11 @@ package trading_bid
 import (
 	"context"
 
-	"github.com/Bipolar-Penguin/bff-website/pkg/domain"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"github.com/Bipolar-Penguin/bff-website/pkg/domain"
 )
 
 type mongoRepository struct {
